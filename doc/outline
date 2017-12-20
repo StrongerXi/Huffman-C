@@ -1,0 +1,17 @@
+Final product should enable command line interaction as such
+
+(to compress file named "fileA" into a file named "fileA.cpr")
+    $user ./prog -c fileA
+(to decompress file named "fileA.cpr" into a file named "fileA")
+    $user ./prog -d fileA.cpr
+
+IDEA:
+
+compression:
+    1. Open file stream, while reading each byte, add frequency count to a freq array
+    whose index corresponds to a specific char. Keep count of unique characters read.
+    2. Sort this array.
+    3. Create a node tree based on this sorted array and count. (this involves a priority queue)
+    4. Again using an array of 256 elements, whose index corresponds to a char. This maps to the huffman code for that
+    specific char.
+    5. Rewind the original read file. Read one character from the file and ... jesus I give up

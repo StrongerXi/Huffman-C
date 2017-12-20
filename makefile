@@ -1,6 +1,6 @@
 # This is intended to be a template for makefile (default to C project)
-# Header to .c file dependency still needs to be fixed.
-# Auto dependency generation is needed.
+# Change any directory/suffices/flags/compiler as needed.
+# Auto-dependencies still cannot handle file-renaming issue
 
 CC = gcc
 CFLAGS = -g -Wall -I./$(HDRDIR) 
@@ -16,8 +16,9 @@ PROGRAM := $(PROJDIR)/output
 SRCS := $(wildcard $(SRCDIR)/*.c)
 OBJS := $(SRCS:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
 
+
 vpath %.h $(HDRDIR)
-vpath %.c $(SRCDIR)
+vpath %.c $(SRCDIR) 
 
 all : $(PROGRAM)
 
@@ -27,13 +28,13 @@ $(PROGRAM) : $(OBJS)
 $(OBJS) : $(OBJDIR)/%.o : %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-foo.c : foo.h
-hello.c : foo.h
+.dependencies : $(SRCS)
+	$(CC) $(CFLAGS) -MM $(SRCS) > .dependencies
 
-# List file.o : header1.h header2.h ... below
+-include .dependencies
 
 .PHONY : clean
 
 clean :
-	rm $(OBJS) $(PROGRAM)
+	rm $(OBJDIR)/*.o $(PROGRAM) .dependencies
 
