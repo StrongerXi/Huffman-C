@@ -1,3 +1,5 @@
+#ifndef NODE__H
+#define NODE__H
 
 typedef struct node{
     char data;
@@ -33,3 +35,4 @@ void nodeInsertToSortedArray(node* toInsert, node* nodePtrArr[], int insertRange
  */
 void printfNodeTree(const node * root);
 
+#endif
