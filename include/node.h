@@ -1,8 +1,9 @@
 #ifndef NODE__H
 #define NODE__H
+#include "boolean.h"
 
 typedef struct node{
-    char hasData;
+    bool hasData;
     unsigned char data;
     struct node* left;
     struct node* right;
@@ -80,6 +81,20 @@ void nodeMerge(node* target, node* childLeft, node* childRight);
  * Assuption: 1. nodePtrArr is sorted in descending order from 0 to arrLen
  */
 void nodeInsertToSortedArray(node* toInsert, node* nodePtrArr[], int arrLen);
+
+/* Function: getLeftmostNode
+ * ==========================
+ * Return a pointer to the node that locates at the 
+ * leftmost branch of the node tree rooted relative to rootNode
+ * ==========================
+ * @param:
+ * 1. rootNode: the rootNode from which the function returns its leftmost child
+ * @requires:
+ * 1. rootNode != NULL
+ * @returns:
+ * pointer to a node that locates at the leftmost subbranch of rootNode
+ */
+node* getLeftmostNode(node* rootNode);
 
 /* Function: printNodeTree
  * =============================

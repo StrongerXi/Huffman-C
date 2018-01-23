@@ -5,7 +5,7 @@
 #include"node.h"
 
 typedef struct bitcode {
-  short numOfBits;
+  int numOfBits;
   unsigned char bits[256];
 } bitcode;
 

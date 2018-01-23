@@ -2,11 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include "encryption.h"
+#include "decryption.h"
 
-void decrypt(char* fileName){
-  FILE* file = fopen(fileName, "r");
-  fclose(file);
-}
+
 
 
 

@@ -19,29 +19,29 @@
  */
 static void printNode(const node * thisNode, int numOfTabs){
 
-    if(thisNode->left == NULL){
+    if (thisNode->hasData) {
         unsigned char line[numOfTabs+1];
-
-        for(int i = 0; i < numOfTabs; i++)
+        for (int i = 0; i < numOfTabs; i++)
             line[i] = '\t';
-
         line[numOfTabs] = '\0';
         printf("%s%c : %ld\n", line, thisNode->data, thisNode->frequency);
-    }else{
+    } else {
         printNode(thisNode->right, numOfTabs+1);
         printNode(thisNode->left, numOfTabs+1);
     }
 }
 
+
 void newNode(node* nodePtr, unsigned char data, unsigned long frequency){
   assert(nodePtr != NULL);
   
-  nodePtr->hasData = 1;
+  nodePtr->hasData = true;
   nodePtr->data = data;
   nodePtr->frequency = frequency;
   nodePtr->left = NULL;
   nodePtr->right = NULL;
 }
+
 
 void disposeNodeTree(node* root){
   if (root != NULL) {
@@ -66,13 +66,15 @@ int nodeCmp(const void* thisNodePtr, const void* otherNodePtr) {
   }
 }
 
+
 void nodeMerge(node* target, node* childLeft, node* childRight){
   target->data = 0;
-  target->hasData = 0;
+  target->hasData = false;
   target->left = childLeft;
   target->right = childRight;
   target->frequency = childLeft->frequency + childRight->frequency;
 }
+
 
 void nodeInsertToSortedArray(node* toInsert, node* nodePtrArr[], int arrLen) {
   int i = 0;
@@ -85,7 +87,15 @@ void nodeInsertToSortedArray(node* toInsert, node* nodePtrArr[], int arrLen) {
 }
 
 
+node* getLeftmostNode(node* rootNode){
+  if (rootNode->hasData) {
+    return rootNode;
+  } else {
+    return getLeftmostNode(rootNode->left);
+  }
+}
+
+
 void printfNodeTree(const node * root){
     printNode(root,0);
 }
-
