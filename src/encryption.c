@@ -96,7 +96,7 @@ static void writeBits(unsigned char code[], int bitsLen, FILE* writeTo, bool end
     } else {
       bitBuffer |= mask >> bufferPos;
     }
-    putchar(code[i]);
+    //putchar(code[i]);
     bufferPos++;
   }
 
@@ -106,7 +106,7 @@ static void writeBits(unsigned char code[], int bitsLen, FILE* writeTo, bool end
     // This puts a char at the beginning which indicates the number of
     // bits to be read near at the end of file
     putc(bufferPos, writeTo);
-    printf("%d to read\n", (bufferPos == 0) ? 8 : bufferPos); // If it's 0, it 
+    //printf("%d to read\n", (bufferPos == 0) ? 8 : bufferPos); // If it's 0, it 
     //indicates the case that original file only has one character.
     //In such a circumstance, all bits 
     return;
@@ -167,12 +167,12 @@ static void writeEncoded(bitcode encodedMap[], FILE* readFrom, FILE* writeTo) {
   while(1) {
     c = fgetc(readFrom);
     if (fgetc(readFrom) == EOF) {
-      printf("writing a %c with %d bits final\n", c, encodedMap[c].numOfBits);
+      //printf("writing a %c with %d bits final\n", c, encodedMap[c].numOfBits);
       writeBits(encodedMap[c].bits, encodedMap[c].numOfBits, writeTo, true);
       break;
     } else {
       fseek(readFrom, -1L, SEEK_CUR);
-      printf("writing a %c with %d bits\n", c, encodedMap[c].numOfBits);
+      //printf("writing a %c with %d bits\n", c, encodedMap[c].numOfBits);
       writeBits(encodedMap[c].bits, encodedMap[c].numOfBits, writeTo, false);
     }
   }
@@ -197,6 +197,7 @@ char encryptFileName[strlen(fileName)+1];
   FILE* encryptedFile = fopen(encryptFileName, "w");
   if (encryptedFile == NULL) {
     fprintf(stderr, "%scannot be opened/created for writing encrypted message\n", encryptFileName); 
+    exit(EXIT_FAILURE);
   }
   //See writeBits function for the purpose of this reserved byte
   putc('0', encryptedFile);
@@ -230,7 +231,7 @@ void generateNodePtrArray(node* nodePtrs[], unsigned long counts[]){
       nodePtrs[index] = (node*) malloc(sizeof(node));
       assert(nodePtrs[index] != NULL);
       newNode(nodePtrs[index++], i, counts[i]);
-      printf("Node created with data %c, frequency %ld, and index %d\n", nodePtrs[index-1]->data, nodePtrs[index-1]->frequency, index-1);
+      //printf("Node created with data %c, frequency %ld, and index %d\n", nodePtrs[index-1]->data, nodePtrs[index-1]->frequency, index-1);
     }
   }
   printf("array of nodes with non-zero frequency established\n");
@@ -256,6 +257,7 @@ void encrypt(char* fileName){
   FILE* file = fopen(fileName, "r");
   if (file == NULL) {
     fprintf(stderr, "%scannot be opened, either file does not exist or there are other problems unknown.\n", fileName);
+    exit(EXIT_FAILURE);
   }
 
   printf("file opened, filename: %s\n", fileName);

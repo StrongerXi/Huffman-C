@@ -5,9 +5,6 @@
 #include "decryption.h"
 
 
-
-
-
 int main(int argc, char* argv[]){
   if(argc != 3){
     fprintf(stderr, "Usage: huffman -flag filename\n flags: -e (encrypt); -d (decrypt)\n");
