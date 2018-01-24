@@ -4,6 +4,11 @@
 #include <stdio.h>
 #include "boolean.h"
 
+typedef struct bitcode {
+  int numOfBits;
+  unsigned char bits[256];
+} bitcode;
+
 
 /*
  * ===============================================================
@@ -15,7 +20,7 @@
 
 /* Function: nonZeroFreqs
  * ----------------------
- * @param: counts; an array of 256 unsigned longs such that
+ * @param: counts: an array of 256 unsigned longs such that
  * counts[i] represents the frequency of unsigned char i
  * @return: the number of unsigned character with non-zero frequency
  * according to counts
@@ -24,7 +29,6 @@ static int nonZeroFreqs(unsigned long counts[256]) {
   int numOfNodes = 0;
   for(int i = 0; i < 256; i++){
     if(counts[i] > 0){
-      printf("%c has frequency %ld\n", i, counts[i]);
       numOfNodes++; 
     }
   }
@@ -96,7 +100,6 @@ static void writeBits(unsigned char code[], int bitsLen, FILE* writeTo, bool end
     } else {
       bitBuffer |= mask >> bufferPos;
     }
-    //putchar(code[i]);
     bufferPos++;
   }
 
@@ -106,10 +109,6 @@ static void writeBits(unsigned char code[], int bitsLen, FILE* writeTo, bool end
     // This puts a char at the beginning which indicates the number of
     // bits to be read near at the end of file
     putc(bufferPos, writeTo);
-    //printf("%d to read\n", (bufferPos == 0) ? 8 : bufferPos); // If it's 0, it 
-    //indicates the case that original file only has one character.
-    //In such a circumstance, all bits 
-    return;
   }
 }
 
@@ -167,12 +166,10 @@ static void writeEncoded(bitcode encodedMap[], FILE* readFrom, FILE* writeTo) {
   while(1) {
     c = fgetc(readFrom);
     if (fgetc(readFrom) == EOF) {
-      //printf("writing a %c with %d bits final\n", c, encodedMap[c].numOfBits);
       writeBits(encodedMap[c].bits, encodedMap[c].numOfBits, writeTo, true);
       break;
     } else {
       fseek(readFrom, -1L, SEEK_CUR);
-      //printf("writing a %c with %d bits\n", c, encodedMap[c].numOfBits);
       writeBits(encodedMap[c].bits, encodedMap[c].numOfBits, writeTo, false);
     }
   }
@@ -191,7 +188,7 @@ static void writeEncoded(bitcode encodedMap[], FILE* readFrom, FILE* writeTo) {
  * A file pointer to the file where encrypted huffman code will be written
  */
 static FILE* initiateEncrytedFile(const char* fileName) {
-char encryptFileName[strlen(fileName)+1];
+  char encryptFileName[strlen(fileName)+1];
   strcpy(encryptFileName, fileName);
   strcat(encryptFileName, ".huff");
   FILE* encryptedFile = fopen(encryptFileName, "w");
@@ -205,17 +202,21 @@ char encryptFileName[strlen(fileName)+1];
   return encryptedFile;
 }
 
-/*
- * ===============================================================
- *
- *            STATIC  FUNCTIONS  SECTION  ENDING
- *
- * ===============================================================
+
+/* Function: readFrequency
+ * =======================
+ * Read in each unsigned char and count their frequency
+ * =======================
+ * @param:
+ * 1. counts: An array of 256 unsigned longs.
+ * 2. file : a pointer to the FILE to read from
+ * @requires:
+ * 1. file != NULL
+ * 2. file is readable.(has access)
+ * @ensures:
+ * 1. counts[i] represents the frequency of unsigned char i in file
  */
-
-
-
-void readFrequency(unsigned long counts[256], FILE* file){
+static void readFrequency(unsigned long counts[256], FILE* file){
   char ch;
   while((ch = fgetc(file)) != EOF){
     counts[(unsigned char) ch]++;
@@ -224,21 +225,48 @@ void readFrequency(unsigned long counts[256], FILE* file){
 }
 
 
-void generateNodePtrArray(node* nodePtrs[], unsigned long counts[]){
+/* Function: generateNodePtrArray
+ * ================================
+ * Construct an array of pointers to nodes with non-zero frequency unsigned chars,
+ * based on frequencies recored in counts
+ * ================================
+ * @requires::
+ * 1. counts is an array of 256 unsigned longs, where counts[i]
+ * represents the frequency of unsigned char i;
+ * 2. nodePtrs should be an array of n node*, which addresses valid memory
+ * spaces for n nodes. n should be the number of non-zero frequencies in counts
+ */
+static void generateNodePtrArray(node* nodePtrs[], unsigned long counts[]){
   int index = 0;
   for(int i = 0; i < 256; i++){
     if(counts[i] > 0){
       nodePtrs[index] = (node*) malloc(sizeof(node));
       assert(nodePtrs[index] != NULL);
       newNode(nodePtrs[index++], i, counts[i]);
-      //printf("Node created with data %c, frequency %ld, and index %d\n", nodePtrs[index-1]->data, nodePtrs[index-1]->frequency, index-1);
     }
   }
   printf("array of nodes with non-zero frequency established\n");
 }
 
 
-void generateEncodeMap(bitcode encodedMap[256],
+/* Function: generateEncodeMap
+ * ============================
+ * Based on the constructed node tree, construct huffman bit code
+ * for the unsigned character held at each node. 
+ * After the function application, the bit-code of unsigned char c will be
+ * stored in encodeMap[c].
+ * Not all elements in encodeMap have to contain huffman code,
+ * the non-zero element in this array should equal to the # of nodes.
+ * ==============================
+ * @param:
+ * 1. encodeMap: An array of struct bitcode. It stores the encoding
+ * information of unsigned char c at encodeMap[c].
+ * 2. rootNode: Addresses the root node of a pre-constructed nodeTree
+ * 3. bitCOde: An accumulator for the current bitCode so far 
+ * 4. bitsNum: An accumulator that keeps track of the number of bits
+ * stored so far.
+ */
+static void generateEncodeMap(bitcode encodedMap[256],
                         node* rootNode, unsigned char bitCode[256], int bitsNum) {
   if (rootNode->hasData == false) {
     bitCode[bitsNum] = '0';
@@ -251,6 +279,17 @@ void generateEncodeMap(bitcode encodedMap[256],
     memcpy(targetStruct->bits, bitCode, bitsNum);
   }
 }
+
+
+/*
+ * ===============================================================
+ *
+ *            STATIC  FUNCTIONS  SECTION  ENDING
+ *
+ * ===============================================================
+ */
+
+
 
 
 void encrypt(char* fileName){

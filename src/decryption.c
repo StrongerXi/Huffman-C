@@ -37,17 +37,14 @@ static void readBitsWrite(FILE* encryptedFile, FILE* decodedFile, node* nodeTree
   if (temp->hasData) {
     printf("special case, where original text only has one kind of char\n");
     while(flag) {
-      //unsigned char c = fgetc(encryptedFile);
       int bitsToRead = 8;
       if (fgetc(encryptedFile) == EOF) {
-        //printf("\nend Reached!, %d to read, %d\n",finalBits, c);
         bitsToRead = finalBits;
         flag = false;
       }
       fseek(encryptedFile, -1L, SEEK_CUR);
       for (int i = 0; i < bitsToRead; i++) {
           fputc(temp->data, decodedFile);
-          //putchar(temp->data);
       }
     }
     return;
@@ -57,22 +54,19 @@ static void readBitsWrite(FILE* encryptedFile, FILE* decodedFile, node* nodeTree
     unsigned char c = fgetc(encryptedFile);
     int bitsToRead = 8;
     if (fgetc(encryptedFile) == EOF) {
-      //printf("\nend Reached!, %d to read, %d\n",finalBits, c);
       bitsToRead = finalBits;
       flag = false;
     }
+    // This is to offset the effect of pre-checking EOF at the if block above
     fseek(encryptedFile, -1L, SEEK_CUR);
     for (int i = 0; i < bitsToRead; i++) {
       if ((c & masks[i]) != 0) {
         temp = temp->right;
-        //putchar('1');
       } else {
         temp = temp->left;
-        //putchar('0');
       }
       if (temp->hasData) {
         fputc(temp->data, decodedFile);
-        //putchar(temp->data);
         temp = nodeTree;
       }
     }
@@ -106,11 +100,9 @@ static void generateNodeTree(FILE* encryptedFile, node* root,
       *sentinel = data;
       *passedLeftmost = true;
     }
-    //printf("read %c\n", data);
     newNode(root, data, 0);
   } else {
     //In this case the data represents a node without data
-    putchar((*sentinel));
     root->left = (node*) malloc(sizeof(node));
     root->right = (node*) malloc(sizeof(node));
     root->hasData = false;
@@ -118,7 +110,6 @@ static void generateNodeTree(FILE* encryptedFile, node* root,
     root->data = 0;
     generateNodeTree(encryptedFile, root->left, sentinel, passedLeftmost);
     generateNodeTree(encryptedFile, root->right, sentinel, passedLeftmost);
-    //printf("left is%c, right is %c\n", root->left->data, root->right->data);
   }
 }
 
@@ -130,6 +121,8 @@ void decrypt(const char* fileName){
     exit(EXIT_FAILURE);
   }
 
+  // Read in the pre-processing info-- tree info and final bits to read.
+  // then construct the appropriate huffman node tree
   char finalBitsToread = getc(file);
   unsigned char sentinel = getc(file);
   bool passedLeftmost = false;
@@ -137,12 +130,14 @@ void decrypt(const char* fileName){
   generateNodeTree(file, root, &sentinel, &passedLeftmost);
   printf("node tree generated\n");
 
+  // Set the output file name based on the input file name
   char decodedFileName[strlen(fileName) + 1];//.huff suffix into .de
   strcpy(decodedFileName, fileName);
   decodedFileName[strlen(fileName) - 4] = 'd';
   decodedFileName[strlen(fileName) - 3] = 'e';
   decodedFileName[strlen(fileName) - 2] = '\0';
 
+  // Create/open the text file to write decoded text information
   FILE* decodedFile = fopen(decodedFileName, "w");
   if (decodedFile == NULL) {
     fprintf(stderr, "Cannot open/write to the file: %s\n", decodedFileName);
@@ -150,7 +145,6 @@ void decrypt(const char* fileName){
   }
   readBitsWrite(file, decodedFile, root, finalBitsToread);
 
-  printfNodeTree(root);
   disposeNodeTree(root);
   fclose(file);
   fclose(decodedFile);
